@@ -136,13 +136,16 @@ jobs:
     steps:
     - name: Checkout repo
       uses: actions/checkout@v3
+    - name: Write SSH key to file
+      run: |
+        echo "${{ secrets.SSH_KEY_CONTENT }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa  # Установите права доступа к ключу
     - name: Copy docker-compose.yml via ssh
       uses: appleboy/scp-action@master
       with:
         host: ${{ secrets.HOST }}
         username: ${{ secrets.USER }}
-        key: ${{ secrets.SSH_KEY }}
-        passphrase: ${{ secrets.SSH_PASSPHRASE }}
+        key: ${{ secrets.SSH_KEY_CONTENT }}  # Используйте содержимое ключа
         source: "docker-compose.production.yml"
         target: "kittygram"
     - name: Executing remote ssh commands to deploy
@@ -150,8 +153,7 @@ jobs:
       with:
         host: ${{ secrets.HOST }}
         username: ${{ secrets.USER }}
-        key: ${{ secrets.SSH_KEY }}
-        passphrase: ${{ secrets.SSH_PASSPHRASE }}
+        key: ${{ secrets.SSH_KEY_CONTENT }}  # Используйте содержимое ключа
         script: |
           cd kittygram
           sudo docker compose -f docker-compose.production.yml pull
